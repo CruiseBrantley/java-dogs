@@ -10,8 +10,7 @@ import javax.persistence.Id;
 @Entity // object ready JPA storage
 public class Dog
 {
-    private @Id
-    @GeneratedValue
+    private @Id @GeneratedValue
     Long id; // primary key automatically populated
     private String breed;
     private int weight;
