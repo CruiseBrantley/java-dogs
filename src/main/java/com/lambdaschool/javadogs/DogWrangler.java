@@ -29,11 +29,60 @@ public class DogWrangler
     @GetMapping("/dogs")
     public Resources<Resource<Dog>> all()
     {
+
         List<Resource<Dog>> dogs = dogCatalog.findAll().stream()
                 .map(assembler::toResource)
                 .collect(Collectors.toList());
 
         return new Resources<>(dogs, linkTo(methodOn(DogWrangler.class).all()).withSelfRel());
+    }
+
+    @GetMapping("/dogs/breeds/")
+    public Resources<Resource<Dog>> findBreedsSorted()
+    {
+        List<Resource<Dog>> dogsChosenByBreed = dogCatalog.findAll()
+                .stream()
+                .sorted((d1, d2) -> d1.getBreed().compareToIgnoreCase(d2.getBreed()))
+                .map(assembler::toResource)
+                .collect(Collectors.toList());
+
+        return new Resources<>(dogsChosenByBreed, linkTo(methodOn(DogWrangler.class).findBreedsSorted()).withSelfRel());
+    }
+
+    @GetMapping("/dogs/weight/")
+    public Resources<Resource<Dog>> findWeightsSorted()
+    {
+        List<Resource<Dog>> dogsChosenByBreed = dogCatalog.findAll()
+                .stream()
+                .sorted((d1, d2) -> d1.getWeight() - d2.getWeight())
+                .map(assembler::toResource)
+                .collect(Collectors.toList());
+
+        return new Resources<>(dogsChosenByBreed, linkTo(methodOn(DogWrangler.class).findWeightsSorted()).withSelfRel());
+    }
+
+    @GetMapping("/dogs/breeds/{breed}")
+    public Resources<Resource<Dog>> findBreed(@PathVariable String breed)
+    {
+        List<Resource<Dog>> dogsChosenByBreed = dogCatalog.findAll()
+                .stream()
+                .filter(dog -> dog.getBreed().equalsIgnoreCase(breed))
+                .map(assembler::toResource)
+                .collect(Collectors.toList());
+
+        return new Resources<>(dogsChosenByBreed, linkTo(methodOn(DogWrangler.class).findBreed(breed)).withSelfRel());
+    }
+
+    @GetMapping("/dogs/apartment/")
+    public Resources<Resource<Dog>> findApartment()
+    {
+        List<Resource<Dog>> dogsChosenByBreed = dogCatalog.findAll()
+                .stream()
+                .filter(dog -> dog.isApartment())
+                .map(assembler::toResource)
+                .collect(Collectors.toList());
+
+        return new Resources<>(dogsChosenByBreed, linkTo(methodOn(DogWrangler.class).findApartment()).withSelfRel());
     }
 
     @GetMapping("/dogs/{id}") // /dogs/4
@@ -74,7 +123,6 @@ public class DogWrangler
     public ResponseEntity<?> addDog(@RequestBody Dog newDog)
             throws URISyntaxException
     {
-        dogCatalog.save(newDog);
         Dog updatedDog = dogCatalog.save(newDog);
 
         Resource<Dog> resource = assembler.toResource(updatedDog);
